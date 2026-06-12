@@ -1,0 +1,230 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的專屬密碼日記本</title>
+    <style>
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                padding: 40px;
+                background: #f4f6f9;
+                color: #333;
+            }
+
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            .header-flex {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+
+            .form-box, .search-box {
+                background: #fff;
+                padding: 25px;
+                border-radius: 8px;
+                margin-bottom: 25px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            }
+
+            .msg-box {
+                background: #fff;
+                padding: 20px;
+                border-radius: 8px;
+                margin-bottom: 15px;
+                border-left: 5px solid #28a745;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            }
+
+            h2 {
+                margin-top: 0;
+                color: #28a745;
+            }
+
+            input, textarea {
+                width: 100%;
+                margin-bottom: 15px;
+                padding: 10px;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                box-sizing: border-box;
+                font-size: 1rem;
+            }
+
+            .search-flex {
+                display: flex;
+                gap: 10px;
+            }
+
+                .search-flex input {
+                    margin-bottom: 0;
+                }
+
+            .btn {
+                background: #28a745;
+                color: white;
+                padding: 12px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 1rem;
+            }
+
+                .btn:hover {
+                    background: #218838;
+                }
+
+            .btn-logout {
+                background: #dc3545;
+                padding: 8px 15px;
+                text-decoration: none;
+                color: white;
+                border-radius: 4px;
+                font-size: 0.9rem;
+            }
+
+            .emoji-selector {
+                font-size: 1.6rem;
+                cursor: pointer;
+                margin-right: 10px;
+                padding: 5px;
+                border-radius: 5px;
+                display: inline-block;
+                transition: 0.2s;
+            }
+
+                .emoji-selector:hover {
+                    background: #e9ecef;
+                    transform: scale(1.2);
+                }
+
+                .emoji-selector.active {
+                    background: #d4edda;
+                    border: 1px solid #28a745;
+                    transform: scale(1.2);
+                }
+
+            .msg-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 5px;
+            }
+
+            .msg-title {
+                font-size: 1.2rem;
+                font-weight: bold;
+                margin: 0;
+                color: #212529;
+            }
+
+            .msg-mood {
+                font-size: 1.5rem;
+            }
+
+            .msg-content {
+                margin: 0 0 10px 0;
+                color: #495057;
+                line-height: 1.5;
+            }
+
+            .msg-time {
+                font-size: 0.8rem;
+                color: #adb5bd;
+                text-align: right;
+            }
+
+            .btn-secondary {
+                background: #6c757d;
+                text-decoration: none;
+                text-align: center;
+                color: white;
+                padding: 10px 15px;
+                border-radius: 4px;
+                line-height: 24px;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-flex">
+            <h1>📖 @ViewBag.Username 的專屬日記本</h1>
+            <a href="/Home/Logout" class="btn-logout">登出系統</a>
+        </div>
+
+        <div class="form-box">
+            <h2>寫下今天的回憶...</h2>
+
+            <div style="margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #dee2e6;">
+                <span style="font-size: 0.9rem; color: #6c757d; margin-right: 10px;">今日心情：</span>
+                <span class="emoji-selector active" onclick="selectMood('😊', this)">😊</span>
+                <span class="emoji-selector" onclick="selectMood('😒', this)">😒</span>
+                <span class="emoji-selector" onclick="selectMood('😐', this)">😐</span>
+                <span class="emoji-selector" onclick="selectMood('😭', this)">😭</span>
+                <span class="emoji-selector" onclick="selectMood('🤬', this)">🤬</span>
+            </div>
+
+            <form action="/Home/AddMessage" method="post">
+                <input type="hidden" id="moodInput" name="mood" value="😊" />
+
+                <input type="text" name="title" placeholder="今日主題" required autocomplete="off" />
+                <textarea name="content" placeholder="寫下你的日記內容..." rows="4" required></textarea>
+                <button type="submit" class="btn" style="width: 100%;">鎖進資料庫</button>
+            </form>
+        </div>
+
+        <div class="search-box">
+            <form action="/Home/Index" method="get" class="search-flex">
+                <input type="text" name="searchString" value="@ViewBag.SearchString" placeholder="搜尋我的舊日記..." autocomplete="off" />
+                <button type="submit" class="btn">搜尋</button>
+                @if (!string.IsNullOrEmpty(ViewBag.SearchString))
+                {
+                    <a href="/Home/Index" class="btn btn-secondary">重置</a>
+                }
+            </form>
+        </div>
+
+        <h2>歷史日記流 (@ViewBag.Messages.Count)</h2>
+        <div>
+            @if (ViewBag.Messages != null && ViewBag.Messages.Count > 0)
+            {
+                foreach (var msg in ViewBag.Messages)
+                {
+                    <div class="msg-box">
+                        <div class="msg-header">
+                            <p class="msg-title">@msg.Title</p>
+                            <span class="msg-mood">@msg.Mood</span>
+                        </div>
+                        <p class="msg-content">@msg.Content</p>
+                        <div class="msg-time">🕒 @msg.Time</div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p style="color: #6c757d; text-align: center; padding: 20px;">目前尚無日記紀錄，快寫下第一篇吧！</p>
+            }
+        </div>
+    </div>
+
+    <script>
+            function selectMood(emoji, element) {
+                // 1. 把所有 Emoji 的選取外框（active class）拔掉
+                document.querySelectorAll('.emoji-selector').forEach(el => el.classList.remove('active'));
+                // 2. 幫當前被點擊的 Emoji 加上選取外框
+                element.classList.add('active');
+                // 3. 把點選的 Emoji 字串塞進隱藏欄位
+                document.getElementById('moodInput').value = emoji;
+            }
+    </script>
+</body>
+</html>
